@@ -6,12 +6,12 @@ public class Curso {
     private String nombre;
     private String descripcion;
     private String instructor;
-    private long duracion;
+    private float duracion;
 
     public Curso() {
     }
 
-    public Curso(int id, String nombre, String descripcion, String instructor, long duracion) {
+    public Curso(int id, String nombre, String descripcion, String instructor, float duracion) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -27,20 +27,12 @@ public class Curso {
         this.id = id;
     }
 
-    public long getDuracion() {
-        return duracion;
+    public String getNombre() {
+        return nombre;
     }
 
-    public void setDuracion(long duracion) {
-        this.duracion = duracion;
-    }
-
-    public String getInstructor() {
-        return instructor;
-    }
-
-    public void setInstructor(String instructor) {
-        this.instructor = instructor;
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
     }
 
     public String getDescripcion() {
@@ -51,11 +43,19 @@ public class Curso {
         this.descripcion = descripcion;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getInstructor() {
+        return instructor;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setInstructor(String instructor) {
+        this.instructor = instructor;
+    }
+
+    public float getDuracion() {
+        return duracion;
+    }
+
+    public void setDuracion(float duracion) {
+        this.duracion = duracion;
     }
 }

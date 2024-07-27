@@ -47,7 +47,7 @@ public class CursoRepositorioImpl implements Repositorio {
         c.setId(rs.getInt("id"));
         c.setNombre(rs.getString("nombre"));
         c.setInstructor(rs.getString("instructor"));
-        c.setDuracion(rs.getLong("duracion"));
+        c.setDuracion(rs.getFloat("duracion"));
         return c;
     }
 }
