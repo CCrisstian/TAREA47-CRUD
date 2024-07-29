@@ -6,7 +6,6 @@ import org.CCristian.apiservlet.webapp.repositories.CursoRepositorioImpl;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 public class CursoServiceImpl implements CursoService{
 
@@ -26,9 +25,9 @@ public class CursoServiceImpl implements CursoService{
     }
 
     @Override
-    public Optional<Curso> porNombre(String nombre) {
+    public List<Curso> porNombre(String nombre) {
         try {
-            return Optional.ofNullable((Curso) repositoryJBDC.porNombre(nombre));
+            return repositoryJBDC.porNombre(nombre);
         } catch (SQLException throwables){
             throw new ServiceJdbcException(throwables.getMessage(), throwables.getCause());
         }

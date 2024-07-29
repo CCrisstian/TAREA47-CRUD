@@ -32,9 +32,9 @@ public class CursoRepositorioImpl implements Repositorio {
     public List<Curso> porNombre(String nombre) throws SQLException {
         List<Curso> cursos = new ArrayList<>();
         try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM cursos as c WHERE c.nombre like ?")){
-            stmt.setString(1, nombre);
+            stmt.setString(1, "%" + nombre + "%");
             try (ResultSet rs = stmt.executeQuery()){
-                if (rs.next()){
+                while (rs.next()){
                     cursos.add(getCursos(rs));
                 }
             }

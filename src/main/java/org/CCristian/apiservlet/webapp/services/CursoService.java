@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface CursoService {
     List<Curso> listar() throws SecurityException;
-    Optional<Curso> porNombre(String nombre);
+    List<Curso> porNombre(String nombre);
 }

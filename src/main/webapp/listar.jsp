@@ -8,10 +8,16 @@ List<Curso> cursos = (List<Curso>) request.getAttribute("cursos");
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Listado de cursos</title>
+    <title>TAREA 46: Listado de cursos y búsqueda de información</title>
 </head>
 <body>
-<h1>Listado de cursos</h1>
+<h1>TAREA 46: Listado de cursos</h1>
+<div class="form-container">
+    <form action="<%=request.getContextPath()%>/buscar" method="post">
+        <input type="text" id="nombre" name="nombre" required>
+        <input type="submit" value="Buscar">
+    </form>
+</div>
 <table>
     <tr>
         <th>ID</th>
