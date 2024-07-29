@@ -13,15 +13,14 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.util.List;
 
-@WebServlet("/cursos")
+@WebServlet({"/index.html", "/cursos"})
 public class CursoServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Connection conn = (Connection) req.getAttribute("conn");    /*Obtiene la conexión a la Base de Datos*/
         CursoService service = new CursoServiceImpl(conn);
 
-        List<Curso> cursos = null;
-        cursos = service.listar();  /*Obtiene una lista con los Productos*/
+        List<Curso> cursos = service.listar();  /*Obtiene una lista con los Productos*/
 
         req.setAttribute("cursos", cursos);
         getServletContext().getRequestDispatcher("/listar.jsp").forward(req, resp);
