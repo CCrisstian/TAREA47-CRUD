@@ -34,75 +34,31 @@ INSERT INTO cursos(nombre, descripcion, instructor, duracion) VALUES('Guía Comp
   
 <h1>Resolución del Profesor</h1>
 
-- Clase modelo Curso.
+- Clase CursoRepositorioImpl y su interface Repositorio:
 ```java
-package org.aguzman.apiservlet.webapp.bbdd.tarea9.models;
-
-public class Curso {
-    
-    private Long id;
-    private String nombre;
-    private String descripcion;
-    private String instructor;
-    private Double duracion;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public String getInstructor() {
-        return instructor;
-    }
-
-    public void setInstructor(String instructor) {
-        this.instructor = instructor;
-    }
-
-    public Double getDuracion() {
-        return duracion;
-    }
-
-    public void setDuracion(Double duracion) {
-        this.duracion = duracion;
-    }
-}
-```
-- Clase de acceso a datos CursoRepositorioImpl y su interface Repositorio.
-```java
-package org.aguzman.apiservlet.webapp.bbdd.tarea9.repositories;
+package org.aguzman.apiservlet.webapp.bbddcrud.tarea10.repositories;
 
 import java.sql.SQLException;
 import java.util.List;
 
 public interface Repository<T> {
+
     List<T> listar() throws SQLException;
+
     List<T> porNombre(String nombre) throws SQLException;
+
+    T porId(Long id) throws SQLException;
+
+    void guardar(T t) throws SQLException;
+
+    void eliminar(Long id) throws SQLException;
 }
 ```
-```java
-package org.aguzman.apiservlet.webapp.bbdd.tarea9.repositories;
 
-import org.aguzman.apiservlet.webapp.bbdd.tarea9.models.Curso;
+```java
+package org.aguzman.apiservlet.webapp.bbddcrud.tarea10.repositories;
+
+import org.aguzman.apiservlet.webapp.bbddcrud.tarea10.models.Curso;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -132,7 +88,7 @@ public class CursoRepositorioImpl implements Repository<Curso> {
     @Override
     public List<Curso> porNombre(String nombre) throws SQLException {
         List<Curso> cursos = new ArrayList<>();
-        
+
         try ( PreparedStatement stmt = conn.prepareStatement("SELECT * FROM cursos as c WHERE c.nombre like ?")) {
             stmt.setString(1, "%" + nombre + "%");
 
@@ -142,8 +98,52 @@ public class CursoRepositorioImpl implements Repository<Curso> {
                 }
             }
         }
-        
         return cursos;
+    }
+
+    @Override
+    public Curso porId(Long id) throws SQLException {
+        Curso curso = null;
+        try ( PreparedStatement stmt = conn.prepareStatement("SELECT * FROM cursos as c WHERE c.id = ?")) {
+            stmt.setLong(1, id);
+
+            try ( ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    curso = getCurso(rs);
+                }
+            }
+        }
+        return curso;
+    }
+
+    @Override
+    public void guardar(Curso curso) throws SQLException {
+        String sql;
+        if (curso.getId() != null && curso.getId() > 0) {
+            sql = "update cursos set nombre=?, descripcion=?, instructor=?, duracion=? where id=?";
+        } else {
+            sql = "insert into cursos (nombre, descripcion, instructor, duracion) values (?,?,?,?)";
+        }
+        try ( PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, curso.getNombre());
+            stmt.setString(2, curso.getDescripcion());
+            stmt.setString(3, curso.getInstructor());
+            stmt.setDouble(4, curso.getDuracion());
+
+            if (curso.getId() != null && curso.getId() > 0) {
+                stmt.setLong(5, curso.getId());
+            }
+            stmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public void eliminar(Long id) throws SQLException {
+        String sql = "delete from cursos where id=?";
+        try ( PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+        }
     }
 
     private Curso getCurso(ResultSet rs) throws SQLException {
@@ -157,29 +157,41 @@ public class CursoRepositorioImpl implements Repository<Curso> {
     }
 }
 ```
-- Clase de servicio CursoServiceImpl y su interface CursoService.
-```java
-package org.aguzman.apiservlet.webapp.bbdd.tarea9.services;
 
-import org.aguzman.apiservlet.webapp.bbdd.tarea9.models.Curso;
+- Clase servicio CursoServiceImpl y su interface CursoService:
+```java
+package org.aguzman.apiservlet.webapp.bbddcrud.tarea10.services;
+
+import org.aguzman.apiservlet.webapp.bbddcrud.tarea10.models.Curso;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CursoService {
+
     List<Curso> listar();
+
     List<Curso> porNombre(String nombre);
+
+    Optional<Curso> porId(Long id);
+
+    void guardar(Curso curso);
+
+    void eliminar(Long id);
 }
 ```
-```java
-package org.aguzman.apiservlet.webapp.bbdd.tarea9.services;
 
-import org.aguzman.apiservlet.webapp.bbdd.tarea9.models.Curso;
-import org.aguzman.apiservlet.webapp.bbdd.tarea9.repositories.CursoRepositorioImpl;
-import org.aguzman.apiservlet.webapp.bbdd.tarea9.repositories.Repository;
+```java
+package org.aguzman.apiservlet.webapp.bbddcrud.tarea10.services;
+
+import org.aguzman.apiservlet.webapp.bbddcrud.tarea10.models.Curso;
+import org.aguzman.apiservlet.webapp.bbddcrud.tarea10.repositories.CursoRepositorioImpl;
+import org.aguzman.apiservlet.webapp.bbddcrud.tarea10.repositories.Repository;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 public class CursoServiceImpl implements CursoService{
     private Repository<Curso> repository;
@@ -205,14 +217,41 @@ public class CursoServiceImpl implements CursoService{
             throw new ServiceJdbcException(e.getMessage(), e.getCause());
         }
     }
+
+    @Override
+    public Optional<Curso> porId(Long id) {
+        try {
+            return Optional.ofNullable(repository.porId(id));
+        } catch (SQLException e) {
+            throw new ServiceJdbcException(e.getMessage(), e.getCause());
+        }
+    }
+
+    @Override
+    public void guardar(Curso curso) {
+        try {
+            repository.guardar(curso);
+        } catch (SQLException e) {
+            throw new ServiceJdbcException(e.getMessage(), e.getCause());
+        }
+    }
+
+    @Override
+    public void eliminar(Long id) {
+        try {
+            repository.eliminar(id);
+        } catch (SQLException e) {
+            throw new ServiceJdbcException(e.getMessage(), e.getCause());
+        }
+    }
+
 }
 ```
-- Clases servlets CursoServlet y BuscarCursoServlet.
-```java
-package org.aguzman.apiservlet.webapp.bbdd.tarea9.controllers;
 
-import org.aguzman.apiservlet.webapp.bbdd.tarea9.services.CursoService;
-import org.aguzman.apiservlet.webapp.bbdd.tarea9.services.CursoServiceImpl;
+- Clases servlets CursoEliminarServlet y CursoFormServlet:
+```java
+package org.aguzman.apiservlet.webapp.bbddcrud.tarea10.controllers;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -221,41 +260,79 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.util.List;
-import org.aguzman.apiservlet.webapp.bbdd.tarea9.models.Curso;
+import java.util.Optional;
+import org.aguzman.apiservlet.webapp.bbddcrud.tarea10.models.Curso;
+import org.aguzman.apiservlet.webapp.bbddcrud.tarea10.services.*;
 
-@WebServlet({"/index.html", "/cursos"})
-public class CursoServlet extends HttpServlet {
+@WebServlet("/cursos/eliminar")
+public class CursoEliminarServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+        Connection conn = (Connection) req.getAttribute("conn");
+        CursoService service = new CursoServiceImpl(conn);
+        long id;
+        try {
+            id = Long.parseLong(req.getParameter("id"));
+        } catch (NumberFormatException e) {
+            id = 0L;
+        }
+        if (id > 0) {
+            Optional<Curso> o = service.porId(id);
+            if (o.isPresent()) {
+                service.eliminar(id);
+                resp.sendRedirect(req.getContextPath()+ "/cursos");
+            } else {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "No existe el cursos en la base de datos!");
+            }
+        } else {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Error el id es null, se debe enviar como parametro en la url!");
+        }
+    }
+}
+```
+
+```java
+package org.aguzman.apiservlet.webapp.bbddcrud.tarea10.controllers;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import org.aguzman.apiservlet.webapp.bbddcrud.tarea10.models.Curso;
+import org.aguzman.apiservlet.webapp.bbddcrud.tarea10.services.*;
+
+@WebServlet("/cursos/form")
+public class CursoFormServlet extends HttpServlet {
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Connection conn = (Connection) req.getAttribute("conn");
         CursoService service = new CursoServiceImpl(conn);
-        List<Curso> cursos = service.listar();
-
-        req.setAttribute("titulo", "Tarea 9: Listado de cursos");
-        req.setAttribute("cursos", cursos);
-        getServletContext().getRequestDispatcher("/listar.jsp").forward(req, resp);
+        long id;
+        try {
+            id = Long.parseLong(req.getParameter("id"));
+        } catch (NumberFormatException e) {
+            id = 0L;
+        }
+        Curso curso = new Curso();
+        if (id > 0) {
+            Optional<Curso> o = service.porId(id);
+            if (o.isPresent()) {
+                curso = o.get();
+            }
+        }
+        req.setAttribute("curso", curso);
+        req.setAttribute("titulo", id > 0 ? "Tarea 10: Editar curso" : "Tarea 10: Crear curso");
+        getServletContext().getRequestDispatcher("/form.jsp").forward(req, resp);
     }
-}
-```
-```java
-package org.aguzman.apiservlet.webapp.bbdd.tarea9.controllers;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.aguzman.apiservlet.webapp.bbdd.tarea9.services.CursoServiceImpl;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.util.List;
-import org.aguzman.apiservlet.webapp.bbdd.tarea9.models.Curso;
-import org.aguzman.apiservlet.webapp.bbdd.tarea9.services.CursoService;
-
-@WebServlet("/cursos/buscar")
-public class BuscarCursoServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -263,18 +340,61 @@ public class BuscarCursoServlet extends HttpServlet {
         Connection conn = (Connection) req.getAttribute("conn");
         CursoService service = new CursoServiceImpl(conn);
         String nombre = req.getParameter("nombre");
-        
-        List<Curso> cursos = service.porNombre(nombre);
+        String descripcion = req.getParameter("descripcion");
+        String instructor = req.getParameter("instructor");
 
-        req.setAttribute("titulo", "Tarea 9: filtrando cursos");
-        req.setAttribute("cursos", cursos);
-        getServletContext().getRequestDispatcher("/listar.jsp").forward(req, resp);
+        double duracion;
+        try {
+            duracion = Double.parseDouble(req.getParameter("duracion"));
+        } catch (NumberFormatException e) {
+            duracion = 0;
+        }
+
+        Map<String, String> errores = new HashMap<>();
+        if (nombre == null || nombre.isBlank()) {
+            errores.put("nombre", "el nombre es requerido!");
+        }
+        if (descripcion == null || descripcion.isBlank()) {
+            errores.put("descripcion", "la descripcion es requerida!");
+        }
+
+        if (instructor == null || instructor.isBlank()) {
+            errores.put("instructor", "el instructor es requerido");
+        }
+        if (duracion == 0) {
+            errores.put("duracion", "la duracion es requerida!");
+        }
+
+        long id;
+        try {
+            id = Long.parseLong(req.getParameter("id"));
+        } catch (NumberFormatException e) {
+            id = 0L;
+        }
+        Curso curso = new Curso();
+        curso.setId(id);
+        curso.setNombre(nombre);
+        curso.setDescripcion(descripcion);
+        curso.setInstructor(instructor);
+        curso.setDuracion(duracion);
+
+        if (errores.isEmpty()) {
+            service.guardar(curso);
+            resp.sendRedirect(req.getContextPath() + "/cursos");
+        } else {
+            req.setAttribute("errores", errores);
+            req.setAttribute("curso", curso);
+            req.setAttribute("titulo", id > 0 ? "Tarea 10: Editar curso" : "Tarea 10: Crear curso");
+            getServletContext().getRequestDispatcher("/form.jsp").forward(req, resp);
+        }
     }
 }
 ```
-- Vista listar.jsp
-```java
-<%@page contentType="UTF-8" import="java.util.*, org.aguzman.apiservlet.webapp.bbdd.tarea9.models.*"%>
+
+Vistas listar.jsp y form.jsp:
+
+```jsp
+<%@page contentType="UTF-8" import="java.util.*, org.aguzman.apiservlet.webapp.bbddcrud.tarea10.models.*"%>
 <%
 List<Curso> cursos = (List<Curso>) request.getAttribute("cursos");
 String titulo = (String) request.getAttribute("titulo");
@@ -287,6 +407,7 @@ String titulo = (String) request.getAttribute("titulo");
     </head>
     <body>
         <h1><%=titulo%></h1>
+        <p><a href="<%=request.getContextPath()%>/cursos/form">crear [+]</a></p>
         <form action="<%=request.getContextPath()%>/cursos/buscar" method="post">
             <input type="text" name="nombre">
             <input type="submit" value="Buscar">
@@ -297,6 +418,8 @@ String titulo = (String) request.getAttribute("titulo");
                 <th>nombre</th>
                 <th>instructor</th>
                 <th>duracion</th>
+                <th>editar</th>
+                <th>eliminar</th>
             </tr>
             <% for(Curso c: cursos){%>
             <tr>
@@ -304,136 +427,78 @@ String titulo = (String) request.getAttribute("titulo");
                 <td><%=c.getNombre()%></td>
                 <td><%=c.getInstructor()%></td>
                 <td><%=c.getDuracion()%></td>
+                <td><a href="<%=request.getContextPath()%>/cursos/form?id=<%=c.getId()%>">editar</a></td>
+                <td><a onclick="return confirm('esta seguro que desea eliminar?');"
+                       href="<%=request.getContextPath()%>/cursos/eliminar?id=<%=c.getId()%>">eliminar</a></td>
             </tr>
             <%}%>
         </table>
     </body>
 </html>
 ```
-- Clase ConexionBaseDatos.
-```java
-package org.aguzman.apiservlet.webapp.bbdd.tarea9.util;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+```jsp
+<%@page contentType="text/html" pageEncoding="UTF-8"
+        import="java.util.*,org.aguzman.apiservlet.webapp.bbddcrud.tarea10.models.*"%>
+<%
+Map<String, String> errores = (Map<String, String>) request.getAttribute("errores");
+Curso curso = (Curso) request.getAttribute("curso");
+String titulo = (String) request.getAttribute("titulo");
+%>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title><%=titulo%></title>
+    </head>
+    <body>
+        <h1><%=titulo%></h1>
+        <p><a href="<%=request.getContextPath()%>/cursos">volver</a></p>
+        <form action="<%=request.getContextPath()%>/cursos/form" method="post">
+            <div>
+                <label for="nombre">Nombre</label>
+                <div>
+                    <input type="text" name="nombre" id="nombre" value="<%=curso.getNombre() != null? curso.getNombre(): ""%>">
+                </div>
+                <% if(errores != null && errores.containsKey("nombre")){%>
+                <div style="color:red;"><%=errores.get("nombre")%></div>
+                <% } %>
+            </div>
 
-public class ConexionBaseDatos {
+            <div>
+                <label for="instructor">Instructor</label>
+                <div>
+                    <input type="text" name="instructor" id="instructor" value="<%=curso.getInstructor()!= null? curso.getInstructor(): ""%>">
+                </div>
+                <% if(errores != null && errores.containsKey("instructor")){%>
+                <div style="color:red;"><%=errores.get("instructor")%></div>
+                <% } %>
+            </div>
 
-    private static String url = "jdbc:mysql://localhost:3306/java_curso?serverTimezone=America/Santiago";
-    private static String username = "root";
-    private static String password = "sasa";
+            <div>
+                <label for="duracion">Duracion</label>
+                <div>
+                    <input type="text" name="duracion" id="duracion" value="<%=curso.getDuracion()!=null? curso.getDuracion():""%>">
+                </div>
+                <% if(errores != null && errores.containsKey("duracion")){%>
+                <div style="color:red;"><%=errores.get("duracion")%></div>
+                <% } %>
+            </div>
 
-    public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(url, username, password);
-    }
-}
-```
-- Clase filtro de conexión ConexionFilter.
-```java
-package org.aguzman.apiservlet.webapp.bbdd.tarea9.filters;
+            <div>
+                <label for="descripcion">Descripción</label>
+                <div>
+                    <textarea name="descripcion" id="descripcion"><%=curso.getDescripcion()!=null? curso.getDescripcion():""%></textarea>
+                </div>
+                <% if(errores != null && errores.containsKey("descripcion")){%>
+                <div style="color:red;"><%=errores.get("descripcion")%></div>
+                <% } %>
+            </div>
 
-import jakarta.servlet.*;
-import jakarta.servlet.annotation.WebFilter;
-import jakarta.servlet.http.HttpServletResponse;
-import org.aguzman.apiservlet.webapp.bbdd.tarea9.services.ServiceJdbcException;
-import org.aguzman.apiservlet.webapp.bbdd.tarea9.util.ConexionBaseDatos;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-
-@WebFilter("/*")
-public class ConexionFilter implements Filter {
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-
-        try (Connection conn = ConexionBaseDatos.getConnection()) {
-
-            if (conn.getAutoCommit()) {
-                conn.setAutoCommit(false);
-            }
-
-            try {
-                request.setAttribute("conn", conn);
-                chain.doFilter(request, response);
-                conn.commit();
-            } catch (SQLException | ServiceJdbcException e) {
-                conn.rollback();
-                ((HttpServletResponse)response).sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-                e.printStackTrace();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-}
-```
-- Clase ServiceJdbcException
-```java
-package org.aguzman.apiservlet.webapp.bbdd.tarea9.services;
-
-public class ServiceJdbcException extends RuntimeException{
-    public ServiceJdbcException(String message) {
-        super(message);
-    }
-
-    public ServiceJdbcException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
-```
-- pom.xml
-```java
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
-    <groupId>org.aguzman.apiservlet.webapp.bbdd.tarea9</groupId>
-    <artifactId>webapp-bbdd-tarea9</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <packaging>war</packaging>
-    <properties>
-        <maven.compiler.source>16</maven.compiler.source>
-        <maven.compiler.target>16</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    </properties>
-    <dependencies>
-        <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>9.0.0</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
-    <build>
-        <finalName>${project.artifactId}</finalName>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.tomcat.maven</groupId>
-                <artifactId>tomcat7-maven-plugin</artifactId>
-                <version>2.2</version>
-                <configuration>
-                    <url>http://localhost:8080/manager/text</url>
-                    <username>admin</username>
-                    <password>12345</password>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.2.3</version>
-                <configuration>
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-</project>
+            <div><input type="submit" value="<%=(curso.getId()!=null && curso.getId()>0)? "Editar": "Crear"%>"></div>
+            <input type="hidden" name="id" value="<%=curso.getId()%>">
+        </form>
+    </body>
+</html>
 ```
