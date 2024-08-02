@@ -1,7 +1,7 @@
-<h1 align="center">TAREA 46: Listado de cursos y búsqueda de información</h1>
+<h1 align="center">Tarea 47: Crud completo de los cursos</h1>
 
-El objetivo de la tarea consiste en crear una aplicación web para cursos de programación llamado <b>webapp-bbdd-tarea9</b> que nos permita ver el listado de cursos y un sistema de búsqueda por nombre, manejando separación de capa MVC.
-Los requerimientos consisten en incorporar la capa de servicios, separándola del controlador (servlet), una clase repositorio (que se encarga de manejar los datos) para listar y buscar por nombre.
+<p>Para este nuevo desafío se requiere modificar el proyecto de la tarea anterior (listado de cursos y búsqueda) para implementar el CRUD completo de los cursos, para crear, actualizar, eliminar y listar.</p>
+<p>Una vez terminada y probada la tarea deberán enviar el código fuente de todos los archivos involucrados, además de las imágenes screenshot (imprimir pantalla).</p>
 La tabla cursos la pueden crear a partir del siguiente esquema DDL:
 
 ```sql
@@ -25,51 +25,13 @@ INSERT INTO cursos(nombre, descripcion, instructor, duracion) VALUES('Microservi
 INSERT INTO cursos(nombre, descripcion, instructor, duracion) VALUES('Guía Completa JUnit y Mockito incluye Spring Boot Test', 'Aprende desde cero JUnit 5 y Mockito en Spring Boot 2', 'Andres Guzman', 15.12);
 ```
 
-Se pide crear e implementar las clases:
+<p>NO subir el proyecto completo, sólo los archivos involucrados, que son los siguientes:</p>
 
-- modelo Curso
-- de conexión a la BBDD ConexionBaseDatos
-- la clase CursoRepositorioImpl implementada a partir de la interface Repositorio (con generic) solo para listar y buscar por nombre:
-
-```java
-    List<Curso> listar();
-    List<Curso> porNombre(String id);
-```
-
-La consulta por nombre la pueden realizar usando where like, de la siguiente forma: 
-
-```sql
-SELECT * FROM cursos as c WHERE c.nombre like ?
-```
-
-Y el parámetro nombre lo pasan de la siguiente forma: 
-
-```java
-stmt.setString(1, "%" + nombre + "%");
-```
-
-Los porcentajes "%" + nombre + "%" indican que busque coincidencias tanto a la derecha como a la izquierda del string nombre, el signo de pregunta es el parámetro de búsqueda de la sentencia preparada.
-
-La clase e interface de servicio para curso también con los dos métodos mencionados.
-
-Implementar dos servlets uno para listar y otro para buscar, con la vista jsp separada usando patrón MVC, pasando los atributos a la vista (cursos y un titulo), también tener en cuenta el filtro para la conexión a la base de datos y la clase de excepción ServiceJdbcException.
-
-El listados de los cursos se manejan en un servlet llamado CursoServlet, sobre el listado de cursos agregar un buscador con formulario HTML que permite buscar por nombre del curso, luego la búsqueda la procesa el servlet llamado BuscarCursoServlet que debe mostrar la lista filtrada reutilizando la misma vista del listado.
-
-Una vez terminada y probada la tarea deberán enviar el código fuente de todos los archivos involucrados, además de las imágenes screenshot (imprimir pantalla).
-
-NO subir el proyecto completo, sólo los archivos involucrados, que son los siguientes:
-
-- Clase modelo Curso.
 - Clase de acceso a datos CursoRepositorioImpl y su interface Repositorio.
 - Clase de servicio CursoServiceImpl y su interface CursoService.
-- Clases servlets CursoServlet y BuscarCursoServlet.
-- Vista listar.jsp
-- Clase ConexionBaseDatos.
-- Clase filtro de conexión ConexionFilter.
-- Clase ServiceJdbcException
-- pom.xml
-
+- Clases servlets CursoFormServlet y CursoEliminarServlet.
+- Vistas listar.jsp y form.jsp.
+  
 <h1>Resolución del Profesor</h1>
 
 - Clase modelo Curso.
