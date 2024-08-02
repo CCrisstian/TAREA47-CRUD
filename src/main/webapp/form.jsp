@@ -10,6 +10,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Formulario de Cursos</title>
+    <link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/css/styles.css">
 </head>
 <body>
 <h1>Formulario de Cursos</h1>
