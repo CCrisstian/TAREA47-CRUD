@@ -1,4 +1,4 @@
-<h1 align="center">Tarea 47: Crud completo de los cursos</h1>
+<h1 align="center">Tarea 47: C.R.U.D. completo de los cursos</h1>
 
 <p>Para este nuevo desafío se requiere modificar el proyecto de la tarea anterior (listado de cursos y búsqueda) para implementar el CRUD completo de los cursos, para crear, actualizar, eliminar y listar.</p>
 <p>Una vez terminada y probada la tarea deberán enviar el código fuente de todos los archivos involucrados, además de las imágenes screenshot (imprimir pantalla).</p>
