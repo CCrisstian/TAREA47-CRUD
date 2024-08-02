@@ -8,10 +8,11 @@ List<Curso> cursos = (List<Curso>) request.getAttribute("cursos");
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TAREA 46: Listado de cursos y búsqueda de información</title>
+    <title>TAREA 47: CRUD de Cursos</title>
 </head>
 <body>
-<h1>TAREA 46: Listado de cursos</h1>
+<h1>TAREA 47: C.U.R.D. de Cursos</h1>
+<p><a href="<%=request.getContextPath()%>/cursos/form">Crear [+]</a></p>
 <div class="form-container">
     <form action="<%=request.getContextPath()%>/buscar" method="post">
         <input type="text" id="nombre" name="nombre" required>
@@ -24,6 +25,8 @@ List<Curso> cursos = (List<Curso>) request.getAttribute("cursos");
         <th>Nombre</th>
         <th>Instructor</th>
         <th>Duración</th>
+        <th>Editar</th>
+        <th>Eliminar</th>
     </tr>
     <% for (Curso c : cursos) { %>
     <tr>
@@ -31,6 +34,9 @@ List<Curso> cursos = (List<Curso>) request.getAttribute("cursos");
         <td><%= c.getNombre() %></td>
         <td><%= c.getInstructor() %></td>
         <td><%= c.getDuracion() %></td>
+        <td><a href="<%= request.getContextPath() %>/cursos/form?id=<%= c.getId() %>">Editar</a></td>
+        <td><a onclick="return confirm('¿Está seguro que desea Eliminar?');"
+        href="<%= request.getContextPath() %>/cursos/eliminar?id=<%= c.getId() %>">Eliminar</a></td>
     </tr>
     <% } %>
 </table>
