@@ -9,6 +9,7 @@ List<Curso> cursos = (List<Curso>) request.getAttribute("cursos");
 <head>
     <meta charset="UTF-8">
     <title>TAREA 47: CRUD de Cursos</title>
+    <link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/css/styles.css">
 </head>
 <body>
 <h1>TAREA 47: C.U.R.D. de Cursos</h1>
